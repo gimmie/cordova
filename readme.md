@@ -1,0 +1,1 @@
+# Sample Cordova with Gimmie Widget Project
