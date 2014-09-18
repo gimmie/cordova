@@ -29,9 +29,10 @@
     </head>
     <body>
         <div>
-          <p>Hello, World</p>
+          <p>Gimmie Demo for Cordova</p>
           <ul>
-            <li><a href="#" gm-view="catalog">Show catalog</a></li>
+            <li><a class="gm-open-catalog" href="#">Show catalog</a></li>
+            <li></li>
           </ul>
         </div>
         <div id="gimmie-root"></div>
@@ -41,14 +42,12 @@
             "key"     : "aa260df8a6eeaeeaa7eb5a200953",
             "secret"  : "72c19b9955496bf99a4f09d89327",
             "user"    : {
-                "external_id": "test"
+                "external_uid": "test"
             },
             "country" : "SG",
             "locale"  : "en",
             "events"  : {
               "widgetLoad": function () {
-                GimmieWidget._showPopup("catalog");
-                // GimmieWidget.API.triggerEvent("name");
               }
             }
           }

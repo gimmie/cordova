@@ -577,30 +577,7 @@ var Remote = function (options) {
     var url = endpoint + '/1/' + action + '.json?callback=' + callbackFunctionName + '&';
     url += self._serializeParameters(parameters);
 
-    window[callbackFunctionName] = function (data) {
-      var headElement = document.getElementsByTagName('head')[0];
-      var element = document.getElementById('gimmie-jsonp');
-      headElement.removeChild(element);
-
-      var validJSON = false;
-      if (typeof data == "string") {
-        try {validJSON = JSON.parse(data);} catch (e) {/*invalid JSON*/}
-      } else {
-        validJSON = JSON.parse(JSON.stringify(data));
-      }
-
-      if (validJSON) {
-        callback(validJSON);
-      } else {
-        throw("JSONP call returned invalid or empty JSON");
-      }
-    }
-
-    var scriptTag = document.createElement('script');
-    scriptTag.type = 'text/javascript';
-    scriptTag.src = url;
-    scriptTag.id = 'gimmie-jsonp';
-    document.getElementsByTagName('head')[0].appendChild(scriptTag);
+    self.__jsonp(url);
   }
 
   this._oauth_jsonp = function (action, parameters, callback) {
@@ -618,6 +595,11 @@ var Remote = function (options) {
       endpoint + '/1/' + action + '.json?callback=' + callbackFunctionName + '&' + self._serializeParameters(parameters)
     );
 
+    self.__jsonp(url);
+
+  }
+
+  this.__jsonp = function (url) {
     window[callbackFunctionName] = function (data) {
       var headElement = document.getElementsByTagName('head')[0];
       var element = document.getElementById('gimmie-jsonp');
