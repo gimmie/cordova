@@ -505,6 +505,9 @@ Gimmie.Events = {
 }
 
 var Remote = function (options) {
+
+  var JSONPCallbackFunctionName = "GimmieJSONPCallback";
+
   var self = this;
   self.options = options;
 
@@ -573,11 +576,10 @@ var Remote = function (options) {
     var endpoint = self.options.gimmie_endpoint || 'https://api.gimmieworld.com';
     parameters.oauth_consumer_key = self.options.key || '';
 
-    var callbackFunctionName = 'GimmieJSONPCallback';
-    var url = endpoint + '/1/' + action + '.json?callback=' + callbackFunctionName + '&';
+    var url = endpoint + '/1/' + action + '.json?callback=' + JSONPCallbackFunctionName + '&';
     url += self._serializeParameters(parameters);
 
-    self.__jsonp(url);
+    self.__jsonp(url, callback);
   }
 
   this._oauth_jsonp = function (action, parameters, callback) {
@@ -587,20 +589,19 @@ var Remote = function (options) {
       return self._oauth_jsonp(action, parameters, callback);
     }
 
-    var callbackFunctionName = 'GimmieJSONPCallback';
     var url = self._signedRequest(
       self.options.key, 
       self.options.secret, 
       self.options.user.external_uid,
-      endpoint + '/1/' + action + '.json?callback=' + callbackFunctionName + '&' + self._serializeParameters(parameters)
+      endpoint + '/1/' + action + '.json?callback=' + JSONPCallbackFunctionName + '&' + self._serializeParameters(parameters)
     );
 
-    self.__jsonp(url);
+    self.__jsonp(url, callback);
 
   }
 
-  this.__jsonp = function (url) {
-    window[callbackFunctionName] = function (data) {
+  this.__jsonp = function (url, callback) {
+    window[JSONPCallbackFunctionName] = function (data) {
       var headElement = document.getElementsByTagName('head')[0];
       var element = document.getElementById('gimmie-jsonp');
       headElement.removeChild(element);
