@@ -1347,48 +1347,49 @@ var Widget = function (root) {
 
       var isPopupLoaded = false;
 
-      var data = self.API.redeem(reward.id);
-      redeemButtonElement.disabled = false;
-      if (data.response.success) {
-        self.updatePoints();
-        reward = data.response.claim.reward;
+      self.API.redeem(reward.id, function(data) {
+        redeemButtonElement.disabled = false;
+        if (data.response.success) {
+          self.updatePoints();
+          reward = data.response.claim.reward;
 
-        var congratMessage = 'Congratulations! You just successfully redeemed this reward!';
+          var congratMessage = 'Congratulations! You just successfully redeemed this reward!';
 
-        headerMessageElement.className += ' gimmie-header-notice';
-        headerMessageElement.innerHTML = congratMessage;
-        mobileMessageElement.className += ' gimmie-header-notice';
-        mobileMessageElement.innerHTML = congratMessage;
+          headerMessageElement.className += ' gimmie-header-notice';
+          headerMessageElement.innerHTML = congratMessage;
+          mobileMessageElement.className += ' gimmie-header-notice';
+          mobileMessageElement.innerHTML = congratMessage;
 
-        redeemButtonElement.style.display = 'none';
-        mobileRedeemButtonElement.style.display = 'none';
+          redeemButtonElement.style.display = 'none';
+          mobileRedeemButtonElement.style.display = 'none';
 
-        claimButtonElement.style.display = 'block';
-        mobileClaimButtonElement.style.display = 'inline-block';
+          claimButtonElement.style.display = 'block';
+          mobileClaimButtonElement.style.display = 'inline-block';
 
-        var user = self._configuration.user;
-        var url = reward.getClaimURL(user.realname, user.email);
-        window.open(url, '_blank');
-      }
-      else {
-        headerMessageElement.className += ' gimmie-header-error';
-        mobileMessageElement.className += ' gimmie-header-error';
-
-        var message = data.error.message;
-        if (data.error.code === '409.5.4') {
-          message = 'Sorry, your points is not enough for this reward';
+          var user = self._configuration.user;
+          var url = reward.getClaimURL(user.realname, user.email);
+          window.open(url, '_blank');
         }
-        else if (data.error.code === '409.5.6') {
-          message = 'Sorry, you have already redeemed this reward. Please go to your profile to claim it.';
+        else {
+          headerMessageElement.className += ' gimmie-header-error';
+          mobileMessageElement.className += ' gimmie-header-error';
+
+          var message = data.error.message;
+          if (data.error.code === '409.5.4') {
+            message = 'Sorry, your points is not enough for this reward';
+          }
+          else if (data.error.code === '409.5.6') {
+            message = 'Sorry, you have already redeemed this reward. Please go to your profile to claim it.';
+          }
+          headerMessageElement.innerHTML = message;
+          mobileMessageElement.innerHTML = message;
         }
-        headerMessageElement.innerHTML = message;
-        mobileMessageElement.innerHTML = message;
-      }
-      redeemButtonElement.innerHTML = 'Redeem with ' + reward.points + ' pts';
-      mobileRedeemButtonElement.innerHTML = 'Redeem with ' + reward.points + ' pts';
-      _o(redeemButtonElement).bind('click', redeemFunction);
-      _o(mobileRedeemButtonElement).bind('click', redeemFunction);
-      self._log('Redeem\n', data);
+        redeemButtonElement.innerHTML = 'Redeem with ' + reward.points + ' pts';
+        mobileRedeemButtonElement.innerHTML = 'Redeem with ' + reward.points + ' pts';
+        _o(redeemButtonElement).bind('click', redeemFunction);
+        _o(mobileRedeemButtonElement).bind('click', redeemFunction);
+        self._log('Redeem\n', data);
+      });
     }
     _o(redeemButtonElement).bind('click', redeemFunction);
 

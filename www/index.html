@@ -28,18 +28,21 @@
         <title>Hello World</title>
     </head>
     <body>
-        <div class="app">
-            <h1>Apache Cordova</h1>
-            <div id="deviceready" class="blink">
-                <p class="event listening">Connecting to Device</p>
-                <p class="event received">Device is Ready</p>
-            </div>
+        <div>
+          <p>Hello, World</p>
+          <ul>
+            <li><a href="#" gm-view="catalog">Show catalog</a></li>
+          </ul>
         </div>
         <div id="gimmie-root"></div>
         <script>
           var _gimmie = {
             "endpoint": "http://www.sgrolexclub.com/gimmie-connect.php?gimmieapi=",
-            "key"     : "0b290e5ccea5e2521c7caeba18c7",
+            "key"     : "aa260df8a6eeaeeaa7eb5a200953",
+            "secret"  : "72c19b9955496bf99a4f09d89327",
+            "user"    : {
+                "external_id": "test"
+            },
             "country" : "SG",
             "locale"  : "en",
             "events"  : {
@@ -53,6 +56,7 @@
         <script type="text/javascript" src="js/hogan-3.0.0.js"></script>
         <script type="text/javascript" src="js/lodash.custom.min.js"></script>
         <script type="text/javascript" src="js/moment.js"></script>
+        <script type="text/javascript" src="js/oauth.js"></script>
         <script type="text/javascript" src="js/gimmie-lib2.js"></script>
         <script type="text/javascript" src="js/gimmie-widget2.js"></script>
         <script type="text/javascript" src="js/gimmie-loader2.js"></script>

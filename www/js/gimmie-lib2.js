@@ -309,7 +309,7 @@ var Gimmie = function(options) {
       cache.response = new Profile(cache.response);
       callback(cache);
     }
-    self.remote.fetch(Remote.Type.XHR, 'profile', {}, function (data) {
+    self.remote.fetch(Remote.Type.OAUTH_JSONP, 'profile', {}, function (data) {
       var response = data.response;
       if (response.success && response.user.user_id != null) {
         if (window.localStorage) {
@@ -336,7 +336,7 @@ var Gimmie = function(options) {
   this.triggerShare = function(service, callback) {
     callback = callback || function () {};
     var self = this;
-    self.remote.fetch(Remote.Type.XHR, 'trigger', {
+    self.remote.fetch(Remote.Type.OAUTH_JSONP, 'trigger', {
       event_name: service,
       source_uid: document.URL
     }, function (data) {
@@ -348,7 +348,7 @@ var Gimmie = function(options) {
   this.checkin = function (id, venue, callback) {
     callback = callback || function () {};
     var self = this;
-    self.remote.fetch(Remote.Type.XHR, 'check_in/' + id, {
+    self.remote.fetch(Remote.Type.OAUTH_JSONP, 'check_in/' + id, {
       venue: venue
     }, function (data) {
       self.notify(Gimmie.Events.CHECKIN, data);
@@ -359,7 +359,7 @@ var Gimmie = function(options) {
   this.triggerEvent = function(eventname, callback) {
     callback = callback || function () {};
     var self = this;
-    self.remote.fetch(Remote.Type.XHR, 'trigger', {
+    self.remote.fetch(Remote.Type.OAUTH_JSONP, 'trigger', {
       event_name: eventname
     }, function (data) {
       self.notify(Gimmie.Events.TRIGGER_EVENT, data);
@@ -370,7 +370,7 @@ var Gimmie = function(options) {
   this.triggerUniqueEvent = function(eventname, uniqueid, callback) {
     callback = callback || function () {};
     var self = this;
-    self.remote.fetch(Remote.Type.XHR, 'trigger', {
+    self.remote.fetch(Remote.Type.OAUTH_JSONP, 'trigger', {
       source_uid: uniqueid,
       event_name: eventname
     }, function (data) {
@@ -381,7 +381,7 @@ var Gimmie = function(options) {
 
   this.redeem = function(rewardid, callback) {
     if (callback) {
-      self.remote.fetch(Remote.Type.XHR, 'redeem', {
+      self.remote.fetch(Remote.Type.OAUTH_JSONP, 'redeem', {
         reward_id: rewardid
       }, function (data) {
         if (data.response.success) {
@@ -408,7 +408,7 @@ var Gimmie = function(options) {
   };
 
   this.loadClaim = function(claimid, callback) {
-    self.remote.fetch(Remote.Type.XHR,'claims', {
+    self.remote.fetch(Remote.Type.OAUTH_JSONP,'claims', {
       claim_id: claimid
     }, callback);
   };
@@ -423,7 +423,7 @@ var Gimmie = function(options) {
   this.loadActions = function(callback) {
     callback = callback || function () {};
     var self = this;
-    self.remote.fetch(Remote.Type.XHR,'recent_actions', null, function (data) {
+    self.remote.fetch(Remote.Type.OAUTH_JSONP,'recent_actions', null, function (data) {
       self.notify(Gimmie.Events.LOAD_ACTIONS, data);
       callback(data);
     });
@@ -433,7 +433,7 @@ var Gimmie = function(options) {
   this.loadActivities = function (callback) {
     callback = callback || function () {};
     var self = this;
-    self.remote.fetch(Remote.Type.XHR,'recent_activities', null, function (data) {
+    self.remote.fetch(Remote.Type.OAUTH_JSONP,'recent_activities', null, function (data) {
       if (data.response.success) {
         for (var i = 0; i < data.response.recent_activities.length; i++) {
           var activity = new RecentActivity(data.response.recent_activities[i]);
@@ -469,7 +469,7 @@ var Gimmie = function(options) {
     if (isShowProgress) {
       parameters['progress'] = 1;
     }
-    self.remote.fetch(Remote.Type.XHR, 'badges', parameters, function (data) {
+    self.remote.fetch(Remote.Type.OAUTH_JSONP, 'badges', parameters, function (data) {
       if (data.response.success) {
         data.response.badges = new Badges(data.response.badges);
       }
@@ -478,7 +478,7 @@ var Gimmie = function(options) {
   }
 
   this.notificationToken = function (callback) {
-    self.remote.fetch(Remote.Type.XHR, 'notification_token', null, callback);
+    self.remote.fetch(Remote.Type.OAUTH_JSONP, 'notification_token', null, callback);
   }
 
   this.login = function (oldID, callback) {
@@ -486,7 +486,7 @@ var Gimmie = function(options) {
     if (oldID) {
       parameters = { old_uid: oldID };
     }
-    self.remote.fetch(Remote.Type.XHR, 'login', parameters, callback);
+    self.remote.fetch(Remote.Type.OAUTH_JSONP, 'login', parameters, callback);
   }
 };
 
@@ -603,6 +603,47 @@ var Remote = function (options) {
     document.getElementsByTagName('head')[0].appendChild(scriptTag);
   }
 
+  this._oauth_jsonp = function (action, parameters, callback) {
+    var endpoint = self.options.gimmie_endpoint || 'https://api.gimmieworld.com';
+
+    if (!self.options.secret && !self.options.user) {
+      return self._oauth_jsonp(action, parameters, callback);
+    }
+
+    var callbackFunctionName = 'GimmieJSONPCallback';
+    var url = self._signedRequest(
+      self.options.key, 
+      self.options.secret, 
+      self.options.user.external_uid,
+      endpoint + '/1/' + action + '.json?callback=' + callbackFunctionName + '&' + self._serializeParameters(parameters)
+    );
+
+    window[callbackFunctionName] = function (data) {
+      var headElement = document.getElementsByTagName('head')[0];
+      var element = document.getElementById('gimmie-jsonp');
+      headElement.removeChild(element);
+
+      var validJSON = false;
+      if (typeof data == "string") {
+        try {validJSON = JSON.parse(data);} catch (e) {/*invalid JSON*/}
+      } else {
+        validJSON = JSON.parse(JSON.stringify(data));
+      }
+
+      if (validJSON) {
+        callback(validJSON);
+      } else {
+        throw("JSONP call returned invalid or empty JSON");
+      }
+    }
+
+    var scriptTag = document.createElement('script');
+    scriptTag.type = 'text/javascript';
+    scriptTag.src = url;
+    scriptTag.id = 'gimmie-jsonp';
+    document.getElementsByTagName('head')[0].appendChild(scriptTag);
+  }
+
   this._serializeParameters = function (parameters) {
     var input = '';
     for (var key in parameters) {
@@ -615,10 +656,53 @@ var Remote = function (options) {
     return input;
   }
 
+  this._signedRequest = function (key, secret, user, url) {
+    var accessor = { consumerSecret: secret, tokenSecret: secret };
+    var message = { action: url, method: "GET", parameters: [["oauth_version","1.0"],["oauth_consumer_key", key],["oauth_token", user]]};
+  
+    OAuth.setTimestampAndNonce(message);
+    OAuth.SignatureMethod.sign(message, accessor);
+  
+    var parameterMap = OAuth.getParameterMap(message);
+    var baseStr = OAuth.decodeForm(OAuth.SignatureMethod.getBaseString(message));
+    var theSig = "";
+  
+    if (parameterMap.parameters) {
+      for (var item in parameterMap.parameters) {
+        for (var subitem in parameterMap.parameters[item]) {
+          if (parameterMap.parameters[item][subitem] == "oauth_signature") {
+            theSig = parameterMap.parameters[item][1];
+            break;
+          }
+        }
+      }
+    }
+  
+    var paramList = baseStr[2][0].split("&");
+    paramList.push("oauth_signature="+ encodeURIComponent(theSig));
+    paramList.sort(function(a,b) {
+      if (a[0] < b[0]) return -1;
+      if (a[0] > b[0]) return 1;
+      if (a[1] < b[1]) return  -1;
+      if (a[1] > b[1]) return 1;
+      return 0;
+    });
+  
+    var locString = "";
+    for (var x in paramList) {
+      locString += paramList[x] + "&";
+    }
+  
+    var finalStr = baseStr[1][0] + "?" + locString.slice(0,locString.length - 1);
+  
+    return finalStr;
+  }
+
 }
 
 Remote.Type = {
-  XHR: 'xhr',
+  XHR: 'jsonp',
   SYNC_XHR: 'syncxhr',
-  JSONP: 'jsonp'
+  JSONP: 'jsonp',
+  OAUTH_JSONP: 'oauth_jsonp'
 }
