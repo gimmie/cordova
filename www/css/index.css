@@ -113,3 +113,33 @@ h1 {
     animation:fade 3000ms infinite;
     -webkit-animation:fade 3000ms infinite;
 }
+
+#gimmie-root .gimmie-mobile .gimmie-items li:last-child {
+  margin-bottom: 40px !important;
+}
+
+#gimmie-root .gimmie-mobile .gimmie-sponsor-here {
+  height: 100px !important;
+}
+
+#gimmie-root .gimmie-mobile .gimmie-sponsor-here .gimmie-text {
+  width: 100% !important;
+  top: 65% !important;
+  text-align: center !important;
+}
+
+#gimmie-root .gimmie-mobile .gimmie-user .gimmie-name {
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+}
+
+#gimmie-root .gimmie-mobile .gimmie-user .gimmie-points {
+  text-align: center !important;
+}
+
+#gimmie-root .gimmie-mobile .gimmie-track {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+

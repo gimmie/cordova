@@ -2068,6 +2068,10 @@ var Widget = function (root) {
     this._configuration = _gimmie;
 
     var config = this._configuration;
+
+    config.user = config.user || {};
+    config.user.name = config.user.name || "Guest";
+
     config.options = config.options || {};
     config.options.pages = config.options.pages || {};
     config.options.pages.catalog = config.options.pages.catalog || {};
@@ -2086,6 +2090,8 @@ var Widget = function (root) {
   else {
     this._configuration = {};
   }
+  console.log ("Configuration, ", this._configuration);
+
   this._templates = {};
   this._notificationQueue = [];
   this._notificationTimer = null;
