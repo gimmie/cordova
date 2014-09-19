@@ -251,6 +251,19 @@ var Widget = function (root) {
       }
     });
     // - incase cannot use special tag
+    
+    var triggers = document.querySelectorAll('*[gm-trigger]');
+    for (var i = 0; i < triggers.length; i++) {
+      var trigger = triggers[i];
+      _o(trigger).bind('click', function (e) {
+        var target = e.currentTarget;
+        var event = target.getAttribute('gm-trigger');
+        self.API.triggerEvent(event, function() {
+          self.API.loadActivities(self.triggerOutput);
+        });
+      });
+    }
+    // - triggers
   }
 
   this._closePopup = function () {
